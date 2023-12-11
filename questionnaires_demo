@@ -82,9 +82,9 @@ const SEQ = {
   
 }
 
-// SUS
+// SUS - System Usability Scale
 // (Brooke, 1996) describes the SUS as “a quick and dirty usability scale.”
-var sus_scale_values = ['Strongly disagree', "Disagree", "Neutral", "Agree", "Strongly", "Strong Agree"];
+var sus_scale_values = ['Strongly disagree', "Disagree", "Neutral", "Agree", "Strongly Agree"];
 
 const sus = {
   type: jsPsychSurveyLikert,
