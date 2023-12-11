@@ -1,0 +1,306 @@
+// import survey from '@jspsych/plugin-survey';
+document.head.innerHTML += '<link rel="stylesheet" href="https://unpkg.com/@jspsych/plugin-survey@0.1.1/css/survey.css">';
+
+const jsPsych = initJsPsych({
+    minimum_valid_rt: 100, // how fast can people respond (milliseconds)
+    // experiment_width: 800, 
+    override_safe_mode: true,
+    show_progress_bar: true,
+    on_interaction_data_update: function(data) {
+      // console.log(JSON.stringify(data));
+      jsPsych.data.write(data);
+    },
+    extensions: [
+      // {type: jsPsychExtensionWebgazer}
+    ],
+    on_finish: function () {
+            // jsPsych.data.displayData();
+
+            /* redirect to prolific for thank you etc
+            disabled during the development */
+
+            // window.location = "https://app.prolific.co/submissions/complete?cc=83E3A6F5"
+
+        }
+    });
+    
+var required_mode = false;    
+    
+var instructions = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `Welcome!
+  <p> You will now see a series of questions about the 'product' you just used. 
+  Please answer as accurately and quickly as you can. There are no right or wrong answers. 
+  `,
+  choices: ['Okay, show me'],
+  data: {
+    task: 'instructions'
+  }
+}
+
+
+// Single Ease Questionnaire
+// Overall, how easy or difficult was it to perform this task?
+// (1= very difficult, 7 = very easy)
+const SEQ = {
+  type: jsPsychSurvey,
+  data: {
+    task: 'seq'
+  },
+  pages: [
+    [{
+        type: 'likert',
+        required: required_mode,
+        prompt: 'Overall, how easy or difficult was it to perform this task?',
+        likert_scale_min_label: 'Very difficult',
+        likert_scale_max_label: 'very easy',
+        likert_scale_values: [
+          {value: 1},
+          {value: 2},
+          {value: 3},
+          {value: 4},
+          {value: 5},
+          {value: 6},
+          {value: 7}
+        ]
+      }]
+    ]
+  
+}
+
+// SUS
+// (Brooke, 1996) describes the SUS as “a quick and dirty usability scale.”
+var sus_scale_values = ['Strongly disagree', "Disagree", "Neutral", "Agree", "Strongly", "Strong Agree"];
+
+const sus = {
+  type: jsPsychSurveyLikert,
+  preamble : "System Usability Scale <p> For each of the following statements, select one reponse that best matches your experience with the 'system' (e.g. website) today.",
+  data: {
+    task: 'sus'
+  },
+  questions: [
+    {prompt: "I think that I would like to use this system frequently.", name: '1', labels: sus_scale_values, required: required_mode},
+    {prompt: "I found the system unnecessarily complex.", name: '2', labels: sus_scale_values, required: required_mode},
+    {prompt: "I thought that the system was easy to use.", name: '3', labels: sus_scale_values, required: required_mode},
+    {prompt: "I think that I would need the support of a technical person to be able to use this system.", name: '4', labels: sus_scale_values, required: required_mode},
+    {prompt: "I found the various functions in this system were well integrated.", name: '5', labels: sus_scale_values, required: required_mode},
+    {prompt: "I thought there was too much inconsistency in this system.", name: '6', labels: sus_scale_values, required: required_mode},
+    {prompt: "I would imagine that most people would learn to use this system very quickly.", name: '7', labels: sus_scale_values, required: required_mode},
+    {prompt: "I found the system very cumbersome to use.", name: '8', labels: sus_scale_values, required: required_mode},
+    {prompt: "I felt confident using the system.", name: '9', labels: sus_scale_values, required: required_mode},
+    {prompt: "I needed to learn a lot of things before I could get going with this system.", name: '10', labels: sus_scale_values, required: required_mode}
+
+  ],
+  randomize_question_order: false
+};
+
+
+
+// Net Promoter Score
+const NPS = {
+  type: jsPsychSurvey,
+  title: "Net Promoter Score",
+  data: {
+    task: 'nps'
+  },
+  pages: [
+    [{
+        type: 'likert',
+        required: required_mode,
+        title: 'Net Promoter Score',
+        prompt: 'How likely is it that you would recommend [Organisation X/Product Y/Service Z] to a friend or colleague?',
+        likert_scale_min_label: 'not at all likely',
+        likert_scale_max_label: 'Extremely likely',
+        likert_scale_values: [
+          {value: 1},
+          {value: 2},
+          {value: 3},
+          {value: 4},
+          {value: 5},
+          {value: 6},
+          {value: 7},
+          {value: 8},
+          {value: 9},
+          {value: 10}
+        ]
+      }]
+    ]
+  
+}
+    
+// 
+
+// UEQ
+
+
+// obstructive	o o o o o o o	supportive
+// complicated	o o o o o o o	easy
+// inefficient	o o o o o o o	efficient
+// confusing	o o o o o o o	clear
+// boring	o o o o o o o	exciting
+// not interesting	o o o o o o o	interesting
+// conventional	o o o o o o o	inventive
+// usual	o o o o o o o	leading edge
+
+var ueq_scale_values = [
+          {value: -3},
+          {value: -2},
+          {value: -1},
+          {value: 0},
+          {value: 1},
+          {value: 2},
+          {value: 3}
+        ]
+
+const UEQ_short = {
+  type: jsPsychSurvey,
+  data: {
+    task: 'ueq_short'
+  },
+  pages: [
+    [
+      {
+        type: 'likert',
+        required: required_mode,
+        prompt: ' ',
+        likert_scale_min_label: 'obstructive',
+        likert_scale_max_label: 'supportive',
+        likert_scale_values: ueq_scale_values
+      },
+      {
+        type: 'likert',
+        required: required_mode,
+        prompt: ' ',
+        likert_scale_min_label: 'complicated',
+        likert_scale_max_label: 'easy',
+        likert_scale_values: ueq_scale_values
+      },
+      {
+        type: 'likert',
+        required: required_mode,
+        prompt: ' ',
+        likert_scale_min_label: 'inefficient',
+        likert_scale_max_label: 'efficient',
+        likert_scale_values: ueq_scale_values
+      },
+      {
+        type: 'likert',
+        required: required_mode,
+        prompt: ' ',
+        likert_scale_min_label: 'confusing',
+        likert_scale_max_label: 'clear',
+        likert_scale_values: ueq_scale_values
+      },
+      {
+        type: 'likert',
+        required: required_mode,
+        prompt: ' ',
+        likert_scale_min_label: 'boring',
+        likert_scale_max_label: 'exciting',
+        likert_scale_values: ueq_scale_values
+      },
+      {
+        type: 'likert',
+        required: required_mode,
+        prompt: ' ',
+        likert_scale_min_label: 'not interesting',
+        likert_scale_max_label: 'interesting',
+        likert_scale_values: ueq_scale_values
+      },
+      {
+        type: 'likert',
+        required: required_mode,
+        prompt: ' ',
+        likert_scale_min_label: 'conventional',
+        likert_scale_max_label: 'inventive',
+        likert_scale_values: ueq_scale_values
+      },
+      {
+        type: 'likert',
+        required: required_mode,
+        prompt: ' ',
+        likert_scale_min_label: 'usual',
+        likert_scale_max_label: 'leading edge',
+        likert_scale_values: ueq_scale_values
+      }
+    ]
+    ]
+  
+}
+
+// SUMI
+
+// UMUX 
+/*  Odd items are scored as
+[score – 1], and even items are scored as [7 – score]. As with the
+SUS, this removes the positive/negative keying of the items and al-
+lows a minimum score of zero. Each individual UMUX item has a
+range of 0 – 6 after recoding, giving the entire four-item scale a
+preliminary maximum of 24. To achieve parity with the 0–100
+range provided by the SUS, a participant’s UMUX score is the
+sum of the four items divided by 24, and then multiplied by 100.
+*/
+
+var likert_scale = [
+  "Strongly Disagree", 
+  "Disagree", 
+  'Somewhat disagree',
+  "Neutral", 
+  'Somwewhat agree',
+  "Agree", 
+  "Strongly Agree"
+];
+
+var UMUX = {
+  type: jsPsychSurveyLikert,
+  data: {
+    task: 'umux'
+  },
+  preamble: 'UMUX',
+  // type: 'likert',
+  //       prompt: 'I like to eat vegetables.',
+  //       likert_scale_min_label: 'Strongly Disagree',
+  //       likert_scale_max_label: 'Strongly Agree',
+  //       likert_scale_values: [
+  //         {value: 1},
+  //         {value: 2},
+  //         {value: 3},
+  //         {value: 4},
+  //         {value: 5}
+  //       ]
+  //     }, 
+  questions: [
+    {prompt: "[This system’s] capabilities meet my requirements.", name: 'capabilities', labels: likert_scale, required: true},
+    {prompt: "Using [this system] is a frustrating experience.", name: 'frustration', labels: likert_scale, required: true},
+    {prompt: "[This system] is easy to use.", name: 'ease', labels: likert_scale, required: true},
+    {prompt: "I have to spend too much time correcting things with [this system].", name: 'time', labels: likert_scale, required: true}
+  ],
+  randomize_question_order: true
+};
+
+
+var end = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `FIN!
+  <p> Thank you, you have now completed the survey. Please do xyz`,
+  
+  choices: ['Okay, show me'],
+  data: {
+    task: 'instructions'
+  }
+}
+
+
+
+
+
+
+
+var timeline = [];
+timeline.push(instructions);
+
+timeline.push( NPS, sus, SEQ, UEQ_short, UMUX, end);
+
+
+/* start the experiment */
+jsPsych.run(timeline);
