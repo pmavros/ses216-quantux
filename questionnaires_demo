@@ -1,3 +1,17 @@
+/*
+
+UX Standardised questionnaires demo
+Author: Panos Mavros
+
+Instructions: 
+- the script is based on the jspsych javascript library https://www.jspsych.org/7.3/
+- it runs on the platform https://cognition.run (you will need to make an account, create a new task, find the 'source' section and copy the script there. It should run as is.
+OR
+- you can run this with some tweaks as an html page (e.g. github page) https://www.jspsych.org/7.3/tutorials/rt-task/ but you will have to figure out how to gather the data on a server.
+- you can take the text out of each questionnaire and use this on another form/survey service.
+*/
+
+
 // import survey from '@jspsych/plugin-survey';
 document.head.innerHTML += '<link rel="stylesheet" href="https://unpkg.com/@jspsych/plugin-survey@0.1.1/css/survey.css">';
 
