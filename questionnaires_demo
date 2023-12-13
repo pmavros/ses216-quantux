@@ -250,8 +250,9 @@ const UEQ_short = {
 SUS, this removes the positive/negative keying of the items and al-
 lows a minimum score of zero. Each individual UMUX item has a
 range of 0 – 6 after recoding, giving the entire four-item scale a
-preliminary maximum of 24. To achieve parity with the 0–100
-range provided by the SUS, a participant’s UMUX score is the
+preliminary maximum of 24. 
+
+To achieve parity with the 0–100 range provided by the SUS, a participant’s UMUX score is the
 sum of the four items divided by 24, and then multiplied by 100.
 */
 
@@ -284,10 +285,10 @@ var UMUX = {
   //       ]
   //     }, 
   questions: [
-    {prompt: "[This system’s] capabilities meet my requirements.", name: 'capabilities', labels: likert_scale, required: true},
+    {prompt: "[This system’s] capabilities meet my requirements.", name: 'requirements', labels: likert_scale, required: true},
     {prompt: "Using [this system] is a frustrating experience.", name: 'frustration', labels: likert_scale, required: true},
     {prompt: "[This system] is easy to use.", name: 'ease', labels: likert_scale, required: true},
-    {prompt: "I have to spend too much time correcting things with [this system].", name: 'time', labels: likert_scale, required: true}
+    {prompt: "I have to spend too much time correcting things with [this system].", name: 'errors', labels: likert_scale, required: true}
   ],
   randomize_question_order: true
 };
