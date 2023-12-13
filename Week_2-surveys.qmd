@@ -1,0 +1,224 @@
+---
+title: "QUX - Surveys"
+format: html
+editor: visual
+---
+
+## R - Quarto
+
+This is Quarto docment enables you to weave together content and executable code into a finished document. It can work with both R and Python. To learn more about Quarto see <https://quarto.org>.
+
+## Libraries
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(tidyverse)
+library(tidyjson)
+```
+
+We will also load the awesome *wesanderson* library, which create colour palettes based on Wes Anderson's universe of films https://github.com/karthik/wesanderson.
+
+```{r}
+library(wesanderson)
+```
+
+## Load data
+
+```{r}
+data <- read_csv("~/Downloads/teaching.csv")
+data
+
+data %>% print(n = 100)
+```
+
+```{r}
+data %>% select(response)
+```
+
+### Unpack json structure
+
+```{r}
+# data %>% filter(task == "sus" ) %>% 
+#   select(response) %>% 
+#   tidyjson::spread_all()
+
+
+processed <- data %>% filter(!is.na(response))  %>% as.data.frame() %>% as.tbl_json(json.column = 'response') %>%
+  filter(str_detect(trial_type, "survey")) %>% 
+  spread_all()
+```
+
+## Net Promoter Score
+
+## 
+
+Promoters response of 9 or 10 and are typically loyal and enthusiastic customers. Passives respond with a score of 7 or 8. They are satisfied with your service but not happy enough to be considered promoters. Detractors
+
+```{r}
+processed %>% 
+  filter(task == "nps") %>% select(response = P0_Q0) %>% 
+  mutate(NPS = cut(response, breaks = c(0, 6, 8, 10), labels = c("Detractors", "Passives", "Promoters")) ) %>% 
+  group_by(NPS, .drop = F) %>% count() %>% 
+  ggplot(aes(NPS, n, fill = NPS)) +
+  geom_bar(stat = "identity") + 
+scale_fill_manual(values=wes_palette(n=4, "GrandBudapest1")) +
+theme_classic() + ggtitle("Net Promoter Score")
+  
+```
+
+# Single-ease questionnaire
+
+```{r}
+processed %>% 
+  filter(task == "seq") %>% select(SEQ  = P0_Q0) %>% 
+  mutate(SEQ = factor(SEQ, levels = 1:7)) %>% 
+  group_by(SEQ, .drop = F) %>% count() %>% 
+  ggplot(aes(SEQ, n, fill = SEQ)) +
+  geom_bar(stat = "identity") + 
+scale_fill_manual(values=wes_palette(n=7, "Zissou1Continuous")) +
+theme_classic() + 
+  ggtitle("Single Ease Questionnire")
+  
+
+```
+
+### SUS
+
+The system usability scale contains 10 items, some of which are stated negatively. In order to calculate a single score, we need to 'reverse' them.
+
+Below, we see that the app we discussed is not considered very useful amongst the class...
+
+```{r}
+
+odd  <-  function(x) {
+  # [User Rating] – 1 = ___ points
+  x = x-1
+  x 
+}
+even = function (x) {
+  # 5– [User Rating] = ___ points
+  x = 5-x
+  x
+}
+
+processed %>% 
+  filter(task == "sus") %>% 
+  mutate(across(c(`1`, `3`, `5`, `7`, `9`), odd)) %>% 
+  mutate(across(c(`2`,`4`,`6`,`8`,`10`), even)) %>% 
+  ungroup() %>% 
+  rowwise() %>% 
+  mutate(sus = sum(c(`1`, `3`, `5`, `7`, `9`, `2`,`4`,`6`,`8`,`10`)), 
+         sus = sus*2.5) %>% 
+  select(sus) %>% 
+  ggplot(aes(sus)) +
+  geom_density(fill = wes_palette(n = 1, name = "Zissou1Continuous")) +
+  theme_classic() + 
+  geom_vline(xintercept=68, linetype = "dashed") +
+  annotate("text", x=70, y=.005, label="Average score", 
+           angle=90, size=5, color="white") +
+  ggtitle("System Usability Scale")
+  
+```
+
+### User Experience Questionnaire - short version
+
+Schrepp, Martin; Hinderks, Andreas; Thomaschewski, Jörg (2017): Design and Evaluation of a Short Version of the User Experience Questionnaire (UEQ-S). In: IJIMAI 4 (6), 103--108. DOI: 10.9781/ijimai.2017.09.001.
+
+The short version of the *user experience questionnaire* contains 8 bipolar items (e.g.boring-exciting) which are then grouped in 2 dimensions: hedonic quality and pragmatic quality.
+
++-----------------+---------+-------------------------------------------------------+
+| Dimension       | Concept | Bipolar item and code from our script                 |
++=================+=========+=======================================================+
+| Hedonic quality |         | P0_Q4 boring-exciting                                 |
+|                 |         |                                                       |
+|                 |         | P0_Q5 not_interesting-interesting                     |
+|                 |         |                                                       |
+|                 |         | P0_Q6 conventional-inventive P0_Q7 usual-leading edge |
++-----------------+---------+-------------------------------------------------------+
+
+        |
+
+|                   \| \| \|
+|                   \| \| P0_Q3 confusing-clear \|
+
+|     |     |     |
+|-----|-----|-----|
+|     |     |     |
+|     |     |     |
+|     |     |     |
+|     |     |     |
+|     |     |     |
+|     |     |     |
+|     |     |     |
+
+Note that the full version of the UEQ (26 items) allows you to compute more granular dimensions: Attractiveness, Perspicuity, Efficiency, Dependability, Stimulation, Novelty.
+
+More information, papers, translations to other languages here: https://www.ueq-online.org/
+
+```{r}
+
+processed %>% 
+  filter(task == "ueq_short") %>% 
+  select(starts_with("P0_")) %>% 
+  mutate(hedonic = mean(c(P0_Q4, P0_Q5, P0_Q6, P0_Q7)), 
+         pragmatic = mean(c(P0_Q0, P0_Q1, P0_Q2, P0_Q3))) %>% 
+  ungroup() %>% select(hedonic, pragmatic) %>% 
+  pivot_longer(c(hedonic, pragmatic)) %>%
+  mutate(name = as.factor(name)) %>% 
+  # select() %>% 
+  ggplot(aes(x = value)) +
+  geom_density(aes(color = name)) + 
+  scale_fill_discrete() +
+  scale_x_continuous(limits = c(-3, 3))+
+  facet_grid(.~ name) +
+  theme_linedraw() +
+  ggtitle("UEQ Short Version")
+  
+
+```
+
+Remember the ends of the scale are \[-3, 3\].
+
+Here we note that our example scores okay (not great) in pragmatic qualities, which we could interpret as we can use this to get things done but it is not very optimised and user-friendly (or it would have scored higher). On the other hand, it gets slightly negative marks on aesthetics (0 is the neutral response).
+
+### UMUX
+
+The UMUX questionnaire is scored as follows:
+
+*Odd items \[positive statements\] are scored as \[score -- 1\], and even items \[negative statements\] are scored as \[7 -- score\]. As with the SUS, this removes the positive/negative keying of the items and allows a minimum score of zero. Each individual UMUX item has a range of 0 -- 6 after recoding, giving the entire four-item scale a preliminary maximum of 24.*
+
+*To achieve parity with the 0--100 range provided by the SUS, a participant's UMUX score is the sum of the four items divided by 24, and then multiplied by 100.*
+
+```{r}
+
+umux <- 
+  processed %>% 
+  filter(task == "umux") %>%
+  mutate(capabilities =  capabilities -1, 
+         frustration = 7 - frustration,
+         ease = ease - 1,
+         time.2 = 7- time.2 ) %>% 
+  rowwise() %>% 
+  mutate(umux = sum(frustration, capabilities, time.2, ease)/24*100) %>% 
+  select(frustration, capabilities, time.2, ease, umux)
+  
+  
+umux %>% 
+  ggplot(aes(umux)) +
+  geom_density(fill = wes_palette(n = 1, name = "Zissou1Continuous")) +
+  theme_classic() + 
+  geom_vline(xintercept=70, linetype = "dashed") +
+  annotate("text", x=72, y=.021, label="A good score \n is > 70", hjust = 0,
+           angle=0, size=5, color="black") +
+  labs(title = "Usability Metric for User Experience (UMUX)", x = "UMUX Score")
+
+```
+
+## Libraries used
+
+That's a good practice when you're sharing code.
+
+```{r}
+sessionInfo()
+```
